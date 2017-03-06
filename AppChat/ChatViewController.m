@@ -35,8 +35,8 @@
     if (!tableData) {
         tableData = [NSMutableArray new];
     }
-//    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight + 5.0, 0);
-//    _tableView.estimatedRowHeight = 44.0f;
+    //    self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight + 5.0, 0);
+    //    _tableView.estimatedRowHeight = 44.0f;
     _tableView.rowHeight = UITableViewAutomaticDimension;
 }
 
@@ -162,22 +162,6 @@
     isMessageTFPresented = false;
 }
 
--(void)tableScrollDown:(BOOL)isAnimation{
-    //    dispatch_async(dispatch_get_main_queue(), ^{
-    //        [self.tableView reloadData];
-    
-    if (tableData.count > 0){
-        
-        NSInteger section = [self.tableView numberOfSections]-1;
-        NSInteger row = [self.tableView numberOfRowsInSection:section] -1;
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:section];
-        
-        [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:isAnimation];
-        //            [self.tableView setHidden:false];
-    }
-    //    });
-}
-
 - (IBAction)sendMessageButtonTouched:(id)sender {
     NSString *trimmed = [messageTextView.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     
@@ -195,12 +179,12 @@
     if (indexPath == nil) return;
     
     //table should know about new index first//It need to do it otherwise your code goes crash anywhy
-//    NSInteger section = [self.tableView numberOfSections];//0 means nothing
+    //    NSInteger section = [self.tableView numberOfSections];//0 means nothing
     
     BOOL isSectionNotExist = false;
-//    if (section <= indexPath.section) {
-//        isSectionNotExist = true;
-//    }
+    //    if (section <= indexPath.section) {
+    //        isSectionNotExist = true;
+    //    }
     //    NSInteger row = [self.tableView numberOfRowsInSection:indexPath.section];
     @try {
         [self.tableView beginUpdates];
@@ -209,19 +193,25 @@
         }
         [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
         [self.tableView endUpdates];
+//        [self.tableView layoutIfNeeded];
         
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-        [self tableScrollDown:true];
-
-//            [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:true];
-//        [self.tableView setContentOffset:CGPointMake(0, CGFLOAT_MAX)];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
+            [self tableScrollDown:true];
         });
     } @catch (NSException *exception) {
         
-    } @finally {
+    }
+}
+
+-(void)tableScrollDown:(BOOL)isAnimation{
+    if (tableData.count > 0){
         
+        NSInteger section = [self.tableView numberOfSections]-1;
+        NSInteger row = [self.tableView numberOfRowsInSection:section] -1;
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:section];
+        
+        [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:isAnimation];
     }
 }
 
@@ -233,6 +223,9 @@
 
 #pragma -mark UITableDataSource
 //- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+//    NSNumber *height = [cellHeightsDictionary objectForKey:indexPath];
+//    if (height)
+//        return height.doubleValue;
 //    return UITableViewAutomaticDimension;
 //}
 
@@ -259,7 +252,7 @@
     NSUInteger indexRow = indexPath.row;
     NSLog(@"section %ld row %lu",(long)indexSection, (unsigned long)indexRow);
     NSString *message = tableData[indexRow];
-
+    
     MessageCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MessageCell"];
     cell.lblMessage.text = message;
     
@@ -267,13 +260,13 @@
 }
 
 /*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
 
 @end
