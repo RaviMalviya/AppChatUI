@@ -55,6 +55,9 @@
     if (isViewDidAppear == false) {
         [self tableScrollDown:false];
     }
+//    else{
+//        [self updateContentInsetForTableView:self.tableView animated:NO];
+//    }
 }
 
 -(void)dealloc{
@@ -172,37 +175,107 @@
     
     messageTextView.text = @"";
 }
--(void)addMessageInTable:(NSString *)message{
-    [tableData addObject:message];
-    
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:tableData.count-1 inSection:0];//[_chatSectionManager indexPathForMessage:message];
-    if (indexPath == nil) return;
-    
-    //table should know about new index first//It need to do it otherwise your code goes crash anywhy
-    //    NSInteger section = [self.tableView numberOfSections];//0 means nothing
-    
-    BOOL isSectionNotExist = false;
-    //    if (section <= indexPath.section) {
-    //        isSectionNotExist = true;
-    //    }
-    //    NSInteger row = [self.tableView numberOfRowsInSection:indexPath.section];
-    @try {
-        [self.tableView beginUpdates];
-        if (isSectionNotExist) {
-            [self.tableView insertSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationNone];
-        }
-        [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-        [self.tableView endUpdates];
-//        [self.tableView layoutIfNeeded];
+
+
+-(void) addAndScrollDownInTableView{
+    if (tableData.count > 0){
+        NSInteger section = [self.tableView numberOfSections]-1;
+        NSInteger row = [self.tableView numberOfRowsInSection:section] -1;
+        NSIndexPath *lastIndexPath = [NSIndexPath indexPathForRow:row inSection:section];
         
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//        dispatch_async(dispatch_get_main_queue(), ^{
-            [self tableScrollDown:true];
-        });
-    } @catch (NSException *exception) {
+        CGRect lastCellFrame = [self.tableView rectForRowAtIndexPath:lastIndexPath];
         
+        [self.tableView setContentOffset:CGPointMake(self.tableView.contentOffset.x, (self.tableView.contentOffset.y + lastCellFrame.size.height)) animated:true];
     }
 }
+
+-(void)addMessageInTable:(NSString *)message{
+    
+    [tableData addObject:message];
+    
+    [self.tableView reloadData];
+//    [self.tableView setNeedsLayout];
+    [self.tableView layoutIfNeeded];
+    [self addAndScrollDownInTableView];
+    
+//    [self addAnotherRow];
+    
+//    [self.tableView reloadData];
+//    [self.tableView layoutIfNeeded];
+//    [self tableScrollDown:true];
+    
+//    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:tableData.count-1 inSection:0];//[_chatSectionManager indexPathForMessage:message];
+//    if (indexPath == nil) return;
+//    
+//    //table should know about new index first//It need to do it otherwise your code goes crash anywhy
+//    //    NSInteger section = [self.tableView numberOfSections];//0 means nothing
+//    
+////    BOOL isSectionNotExist = false;
+//    //    if (section <= indexPath.section) {
+//    //        isSectionNotExist = true;
+//    //    }
+//    //    NSInteger row = [self.tableView numberOfRowsInSection:indexPath.section];
+//    @try {
+//        [self.tableView beginUpdates];
+////        if (isSectionNotExist) {
+////            [self.tableView insertSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationNone];
+////        }
+//        [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+//        [self.tableView endUpdates];
+////        [self.tableView layoutIfNeeded];
+//        
+//                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+////        dispatch_async(dispatch_get_main_queue(), ^{
+//            [self tableScrollDown:true];
+//        });
+//    } @catch (NSException *exception) {
+//        
+//    }
+}
+
+//- (void)addAnotherRow {
+//    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:(tableData.count - 1) inSection:0];
+//    [self.tableView beginUpdates];
+//    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+//    [self.tableView endUpdates];
+//    [self updateContentInsetForTableView:self.tableView animated:YES];
+//    
+//    // TODO: if the scroll offset was at the bottom it can be scrolled down (allow user to scroll up and not override them)
+//    
+//    [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+//}
+//
+//- (void)updateContentInsetForTableView:(UITableView *)tableView animated:(BOOL)animated {
+//    NSUInteger lastRow = [self tableView:tableView numberOfRowsInSection:0];
+//    NSLog(@"last row: %lu", (unsigned long)lastRow);
+//    NSLog(@"items count: %lu", (unsigned long)tableData.count);
+//    
+//    NSUInteger lastIndex = lastRow > 0 ? lastRow - 1 : 0;
+//    
+//    NSIndexPath *lastIndexPath = [NSIndexPath indexPathForItem:lastIndex inSection:0];
+//    CGRect lastCellFrame = [self.tableView rectForRowAtIndexPath:lastIndexPath];
+//    
+//    // top inset = table view height - top position of last cell - last cell height
+//    CGFloat topInset = MAX(CGRectGetHeight(self.tableView.frame) - lastCellFrame.origin.y - CGRectGetHeight(lastCellFrame), 0);
+//    
+//    // What about this way? (Did not work when tested)
+//    // CGFloat topInset = MAX(CGRectGetHeight(self.tableView.frame) - self.tableView.contentSize.height, 0);
+//    
+//    NSLog(@"top inset: %f", topInset);
+//    
+//    UIEdgeInsets contentInset = tableView.contentInset;
+//    contentInset.top = topInset;
+//    NSLog(@"inset: %f, %f : %f, %f", contentInset.top, contentInset.bottom, contentInset.left, contentInset.right);
+//    
+//    NSLog(@"table height: %f", CGRectGetHeight(self.tableView.frame));
+//    
+//    UIViewAnimationOptions options = UIViewAnimationOptionBeginFromCurrentState;
+//    [UIView animateWithDuration:animated ? 0.25 : 0.0 delay:0.0 options:options animations:^{
+//        tableView.contentInset = contentInset;
+//        
+//    } completion:^(BOOL finished) {
+//    }];
+//}
 
 -(void)tableScrollDown:(BOOL)isAnimation{
     if (tableData.count > 0){
